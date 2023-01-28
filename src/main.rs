@@ -1,9 +1,14 @@
+use std::path::PathBuf;
+
 use clap::{Args, Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
 struct Cli {
+    /// Password file
+    #[arg(short, long, value_name = "FILE")]
+    file: Option<PathBuf>,
     /// Command
     #[command(subcommand)]
     command: Commands,
@@ -43,18 +48,25 @@ struct Keyword {
 
 fn main() {
     let cli = Cli::parse();
+
+    let file_path = match cli.file {
+        Some(f) => f,
+        None => PathBuf::from(r"~/.passwd"),
+    };
+    dbg!(file_path);
+
     match &cli.command {
         Commands::Add(add_data) => {
-            println!("add command: {:?} {:?} {:?}", add_data.url, add_data.id, add_data.password);
+            dbg!(&add_data.url, &add_data.id, &add_data.password);
         }
         Commands::Show(keyword) => {
-            println!("get command: {:?}", keyword.keyword);
+            dbg!(&keyword.keyword);
         }
         Commands::Update(update_data) => {
-            println!("update command: {:?} {:?} {:?}", update_data.keyword, update_data.id, update_data.password);
+            dbg!(&update_data.keyword, &update_data.id, &update_data.password);
         }
         Commands::Delete(keyword) => {
-            println!("delete command: {:?}", keyword.keyword);
+            dbg!(&keyword.keyword);
         }
     }
 }
