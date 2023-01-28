@@ -1,14 +1,13 @@
-use std::path::PathBuf;
+use std::fs;
+use std::fs::File;
 
 use clap::{Args, Parser, Subcommand};
+use dirs;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
 struct Cli {
-    /// Password file
-    #[arg(short, long, value_name = "FILE")]
-    file: Option<PathBuf>,
     /// Command
     #[command(subcommand)]
     command: Commands,
@@ -45,15 +44,20 @@ struct Keyword {
     keyword: Option<String>,
 }
 
-
-fn main() {
+fn main() -> std::io::Result<()> {
     let cli = Cli::parse();
 
-    let file_path = match cli.file {
-        Some(f) => f,
-        None => PathBuf::from(r"~/.passwd"),
-    };
-    dbg!(file_path);
+    // Password file name is "$HOME/.padmn_passwd"
+    let mut file_path = dirs::home_dir().unwrap();
+    file_path.push(".pdmn_passwd");
+
+    // Create the password file if not exists
+    if file_path.try_exists().is_err() {
+        File::create(&file_path)?;
+    }
+
+    let contents = fs::read_to_string(file_path);
+    dbg!(contents.unwrap());
 
     match &cli.command {
         Commands::Add(add_data) => {
@@ -69,4 +73,5 @@ fn main() {
             dbg!(&keyword.keyword);
         }
     }
+    Ok(())
 }
